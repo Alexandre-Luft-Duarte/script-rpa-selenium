@@ -2,6 +2,8 @@ from selenium import webdriver
 import time
 from selenium.webdriver.common.by import By
 from utils import ler_codigos_csv
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 # Inicializa o Chrome
 driver = webdriver.Chrome()
@@ -39,37 +41,43 @@ driver.get('https://e-gov.betha.com.br/cdweb/03114-473/contribuinte/rel_guiaiptu
 time.sleep(2)
 
 # Inserindo os códigos dos imóveis
-for posicao, codigo in enumerate(ler_codigos_csv()):
+cont = 0
+for cont, codigo in enumerate(ler_codigos_csv(), 1):
     print(f"Pesquisando o código do imóvel {codigo}")
 
-    # Clica onde após o clique aparece o campo para colocar o código
-    botao_codigo_imovel = driver.find_element(By.XPATH, "/html/body/div[1]/div[2]/div/div/div/form/div[1]/div[1]/div[2]/div/div[1]/div[3]/div/div/div/a")
-    botao_codigo_imovel.click()
+    if cont == 1:
+        # Clica onde após o clique aparece o campo para colocar o código
+        botao_codigo_imovel = driver.find_element(By.XPATH, "/html/body/div[1]/div[2]/div/div/div/form/div[1]/div[1]/div[2]/div/div[1]/div[3]/div/div/div/a")
+        botao_codigo_imovel.click()
 
-    # Clica no campo para escrever e escreve o código
-    campo_input_imovel = driver.find_element(By.ID, "mainForm:iImoveis")
-    campo_input_imovel.click()
-    campo_input_imovel.clear()
-    campo_input_imovel.send_keys(str(codigo))
-    
-    time.sleep(1)
-
-    # Fazendo a pesquisa
-    botao_continuar_pesquisar_imóvel = driver.find_element(By.ID, "mainForm:btIImoveis")
-    botao_continuar_pesquisar_imóvel.click()
-
-    time.sleep(1)
-
-    if posicao > 0:
-        # Após fazer a consulta do iptu, clica em fazer nova consulta
-        botao_nova_consulta = driver.find_element(By.XPATH, "/html/body/div[1]/div[2]/div/div/div/form/div[1]/div[1]/div[3]/span/input")
-        botao_nova_consulta.click()
-
-        # Limpa o campo para colocar o código seguinte
+        # Clica no campo para escrever e escreve o código
+        campo_input_imovel = driver.find_element(By.ID, "mainForm:iImoveis")
         campo_input_imovel.click()
         campo_input_imovel.clear()
         campo_input_imovel.send_keys(str(codigo))
-    campo_input_imovel.clear()
+        
+        time.sleep(1)
 
+        # Fazendo a pesquisa
+        botao_continuar_pesquisar_imóvel = driver.find_element(By.ID, "mainForm:btIImoveis")
+        botao_continuar_pesquisar_imóvel.click()
+        time.sleep(1)
+    else:
+        # Após fazer a consulta do iptu, clica em fazer nova consulta
+        botao_nova_consulta = WebDriverWait(driver, 30).until(
+        EC.visibility_of_element_located((By.XPATH, "/html/body/div[1]/div[2]/div/div/div/form/div[1]/div[1]/div[3]/span/input")))
+        botao_nova_consulta.click()
 
+        time.sleep(1)
+
+        campo_input_imovel = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "mainForm:iImoveis")))
+        # Limpa o campo para colocar o código seguinte
+        campo_input_imovel.clear()
+        campo_input_imovel.send_keys(str(codigo))
+
+        # Faz a pesquisa novamente
+        botao_continuar_pesquisar_imóvel = driver.find_element(By.ID, "mainForm:btIImoveis")
+        botao_continuar_pesquisar_imóvel.click()
+
+print("Deu boa")
 time.sleep(5)
