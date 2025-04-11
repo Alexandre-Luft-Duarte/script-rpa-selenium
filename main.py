@@ -91,6 +91,5 @@ for cont, codigo in enumerate(ler_codigos_csv(), 1):
 
     
 
-
 print("Deu boa")
 time.sleep(5)
