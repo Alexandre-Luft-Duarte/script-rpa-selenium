@@ -1,7 +1,7 @@
 from selenium import webdriver
 import time
 from selenium.webdriver.common.by import By
-from utils import ler_codigos_csv, safe_click
+from utils import ler_codigos_csv, safe_click, show
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -83,13 +83,16 @@ for cont, codigo in enumerate(ler_codigos_csv(), 1):
         botao_continuar_pesquisar_imóvel = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "mainForm:btIImoveis")))
         botao_continuar_pesquisar_imóvel.click()
 
-        # Chama a função que procura e clica em um elemento. Tenta clicar no botão de débitos em aberto
-        safe_click(driver, By.ID, "P0")
 
-        # Chama a função que procura e clica em um elemento. Tenta clicar no botão de marcar todas as parcelas
-        safe_click(driver, By.ID, "selectAll")
-
-    
+        if not show(driver, By.ID, "mainForm:master:messageSection:warn"):
+            try:
+                WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "PO")))
+                safe_click(driver, By.ID, "P0") # Chama a função que procura e clica em um elemento. Tenta clicar no botão de débitos em aberto
+                safe_click(driver, By.ID, "selectAll") # Chama a função que procura e clica em um elemento. Tenta clicar no botão de débitos em aberto
+            except Exception as e:
+                print("PO ou selectAll não encontrada: {e}")
+        else:
+            print("Mensagem de sem iptu encontrada. Pulando cliques.")
 
 
 print("Deu boa")
