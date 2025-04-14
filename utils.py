@@ -43,9 +43,3 @@ def show(driver, by, value, timeout=3):
         return True
     except TimeoutException:
         return False
-
-
-<<<<<<< HEAD
-=======
-
->>>>>>> testando
