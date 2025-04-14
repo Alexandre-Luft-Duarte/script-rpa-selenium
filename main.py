@@ -1,12 +1,15 @@
 from selenium import webdriver
-import time
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from utils import ler_codigos_csv, safe_click, show
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import time
 
 # Inicializa o Chrome
-driver = webdriver.Chrome()
+chrome_options = webdriver.ChromeOptions()
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 driver.maximize_window()
 
 # Abre e navega no site da prefeitura
@@ -84,16 +87,11 @@ for cont, codigo in enumerate(ler_codigos_csv(), 1):
         botao_continuar_pesquisar_imóvel.click()
 
 
-        if not show(driver, By.ID, "mainForm:master:messageSection:warn"):
-            try:
-                WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "PO")))
-                safe_click(driver, By.ID, "P0") # Chama a função que procura e clica em um elemento. Tenta clicar no botão de débitos em aberto
-                safe_click(driver, By.ID, "selectAll") # Chama a função que procura e clica em um elemento. Tenta clicar no botão de débitos em aberto
-            except Exception as e:
-                print("PO ou selectAll não encontrada: {e}")
-        else:
-            print("Mensagem de sem iptu encontrada. Pulando cliques.")
-
+        #if not show(driver, By.ID, "mainForm:master:messageSection:warn"):
+        safe_click(driver, By.ID, "P0") # Chama a função que procura e clica em um elemento. Tenta clicar no botão de débitos em aberto
+        safe_click(driver, By.ID, "selectAll") # Chama a função que procura e clica em um elemento. Tenta clicar no botão de débitos em aberto
+        #else:
+         #   print("Mensagem de sem iptu encontrada. Pulando cliques.")
 
 print("Deu boa")
 time.sleep(5)
