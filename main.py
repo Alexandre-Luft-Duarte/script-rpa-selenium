@@ -2,10 +2,11 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
-from utils import ler_codigos_csv, safe_click, show
+from utils import ler_codigos_csv, safe_click
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+from selenium.common.exceptions import TimeoutException
 
 # Inicializa o Chrome
 chrome_options = webdriver.ChromeOptions()
@@ -86,12 +87,43 @@ for cont, codigo in enumerate(ler_codigos_csv(), 1):
         botao_continuar_pesquisar_imóvel = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "mainForm:btIImoveis")))
         botao_continuar_pesquisar_imóvel.click()
 
+        #botao_emissao = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "mainForm:emitirUnificada")))
+        #botao_emissao.click()
 
-        #if not show(driver, By.ID, "mainForm:master:messageSection:warn"):
-        safe_click(driver, By.ID, "P0") # Chama a função que procura e clica em um elemento. Tenta clicar no botão de débitos em aberto
-        safe_click(driver, By.ID, "selectAll") # Chama a função que procura e clica em um elemento. Tenta clicar no botão de débitos em aberto
-        #else:
-         #   print("Mensagem de sem iptu encontrada. Pulando cliques.")
+        # Verifica se a mensagem de sem iptu existe
+        try:
+            mensagem_sem_iptu = WebDriverWait(driver, 2).until(EC.presence_of_element_located((By.ID, "mainForm:master:messageSection:warn"))).text.strip()
+            if mensagem_sem_iptu:
+                print(f"Código {codigo} não possui IPTU.")
+                continue
+        except TimeoutException:
+            pass
+        
+        # Chama a função que procura e clica em um elemento. Tenta clicar no botão de débitos em aberto
+        safe_click(driver, By.ID, "P0")
+        time.sleep(2)
+
+        try:
+            marcar_qtd_parcelas = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.ID, "mainForm:P:0:F:0:resumo:4:selectedUnica")))
+            print("Selecionando quantidade de parcelas...")
+            driver.execute_script("arguments[0].click();", marcar_qtd_parcelas)
+            time.sleep(2)
+        except TimeoutException:
+            print("Seletor de parcelas não encontrado — seguindo normalmente.")
+        except Exception as e:
+            print(f"Erro ao tentar clicar em quantidade de parcelas: {e}")
+
+        time.sleep(2)
+
+        # Chama a função que procura e clica em um elemento. Tenta clicar no botão de marcar todas
+        safe_click(driver, By.ID, "selectAll")
+
+        time.sleep(2)
+
+        if safe_click(driver, By.ID, "mainForm:emitirUnificada"):
+            print("Clicou em emissão")
+        else: 
+            print("Não clicou")
 
 print("Deu boa")
 time.sleep(5)
