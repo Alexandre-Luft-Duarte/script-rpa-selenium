@@ -2,10 +2,10 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
-from utils import ler_codigos_csv, safe_click
+from code.utils import ler_codigos_csv, safe_click, mover_pdf_baixado
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import time
+import time, pyautogui, os
 from selenium.common.exceptions import TimeoutException
 
 # Inicializa o Chrome
@@ -115,10 +115,21 @@ for cont, codigo in enumerate(ler_codigos_csv(), 1):
     time.sleep(2)
 
     # Clica em emitir guia (se disponível)
-    #if safe_click(driver, By.ID, "mainForm:emitirUnificada"):
-    #    print("Clicou em emissão.")
-    #else:
-    #    print("Botão de emissão não encontrado ou não clicável.")
+    if safe_click(driver, By.ID, "mainForm:emitirUnificada"):
+        print("Clicou em emissão.")
+    else:
+        print("Botão de emissão não encontrado ou não clicável.")
+
+    # Baixa o pdf, jogar para uma pasta específica e voltar para o site do betha
+    time.sleep(10)
+    pyautogui.hotkey('ctrl', 's')
+    pyautogui.press('enter')
+
+    pasta_origem = os.path.expanduser("~/Downloads")
+    pasta_destino = os.path.expanduser("~/Área de Trabalho/pdfs-iptu")
+    mover_pdf_baixado(pasta_origem, pasta_destino)
+    
+    pyautogui.hotkey('alt', 'f4')
 
 
 print("Deu boa")
