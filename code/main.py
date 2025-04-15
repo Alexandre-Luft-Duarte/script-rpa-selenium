@@ -2,11 +2,12 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
-from code.utils import ler_codigos_csv, safe_click, mover_pdf_baixado
+from utils import ler_codigos_csv, safe_click, configurar_chrome_com_download
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import time, pyautogui, os
+import time, pyautogui
 from selenium.common.exceptions import TimeoutException
+
 
 # Inicializa o Chrome
 chrome_options = webdriver.ChromeOptions()
@@ -124,11 +125,6 @@ for cont, codigo in enumerate(ler_codigos_csv(), 1):
     time.sleep(10)
     pyautogui.hotkey('ctrl', 's')
     pyautogui.press('enter')
-
-    pasta_origem = os.path.expanduser("~/Downloads")
-    pasta_destino = os.path.expanduser("~/Área de Trabalho/pdfs-iptu")
-    mover_pdf_baixado(pasta_origem, pasta_destino)
-    
     pyautogui.hotkey('alt', 'f4')
 
 
