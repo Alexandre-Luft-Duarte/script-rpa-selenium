@@ -48,82 +48,78 @@ time.sleep(3)
 
 # Inserindo os códigos dos imóveis
 for cont, codigo in enumerate(ler_codigos_csv(), 1):
-    print(f"Pesquisando o código do imóvel {codigo}")
+    print(f"\nPesquisando o código do imóvel {codigo}")
 
     if cont == 1:
-        # Clica onde após o clique aparece o campo para colocar o código
+        # Primeiro acesso: clica no botão que revela o campo de pesquisa
         botao_codigo_imovel = WebDriverWait(driver, 30).until(
-        EC.visibility_of_element_located((By.XPATH, "/html/body/div[1]/div[2]/div/div/div/form/div[1]/div[1]/div[2]/div/div[1]/div[3]/div/div/div/a")))
+            EC.visibility_of_element_located((By.XPATH, "/html/body/div[1]/div[2]/div/div/div/form/div[1]/div[1]/div[2]/div/div[1]/div[3]/div/div/div/a"))
+        )
         botao_codigo_imovel.click()
-
-        # Clica no campo para escrever e escreve o código
-        campo_input_imovel = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "mainForm:iImoveis")))
-        campo_input_imovel.clear()
-        campo_input_imovel.send_keys(str(codigo))
-        
-        # Fazendo a pesquisa
-        botao_continuar_pesquisar_imóvel = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "mainForm:btIImoveis")))
-        botao_continuar_pesquisar_imóvel.click()
-
-        # Chama a função que procura e clica em um elemento. Tenta clicar no botão de débitos em aberto
-        safe_click(driver, By.ID, "P0")
-
-        # Chama a função que procura e clica em um elemento. Tenta clicar no botão de marcar todas as parcelas
-        safe_click(driver, By.ID, "selectAll")
     else:
-        # Após fazer a consulta do primeiro iptu, clica em fazer nova consulta
+        # Clica no botão de nova consulta
         botao_nova_consulta = WebDriverWait(driver, 30).until(
-        EC.visibility_of_element_located((By.XPATH, "/html/body/div[1]/div[2]/div/div/div/form/div[1]/div[1]/div[3]/span/input")))
+            EC.visibility_of_element_located((By.XPATH, "/html/body/div[1]/div[2]/div/div/div/form/div[1]/div[1]/div[3]/span/input"))
+        )
         botao_nova_consulta.click()
-
         time.sleep(1)
 
-        campo_input_imovel = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "mainForm:iImoveis")))
-        # Limpa o campo para colocar o código seguinte
-        campo_input_imovel.clear()
-        campo_input_imovel.send_keys(str(codigo))
+    # Campo para digitar o código
+    campo_input_imovel = WebDriverWait(driver, 30).until(
+        EC.visibility_of_element_located((By.ID, "mainForm:iImoveis"))
+    )
+    campo_input_imovel.clear()
+    campo_input_imovel.send_keys(str(codigo))
 
-        # Faz a pesquisa novamente
-        botao_continuar_pesquisar_imóvel = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "mainForm:btIImoveis")))
-        botao_continuar_pesquisar_imóvel.click()
+    # Clica no botão para pesquisar
+    botao_continuar_pesquisar_imovel = WebDriverWait(driver, 30).until(
+        EC.visibility_of_element_located((By.ID, "mainForm:btIImoveis"))
+    )
+    botao_continuar_pesquisar_imovel.click()
+    time.sleep(1)
 
-        #botao_emissao = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "mainForm:emitirUnificada")))
-        #botao_emissao.click()
+    # Verifica se apareceu a mensagem de "sem IPTU"
+    try:
+        mensagem_sem_iptu = WebDriverWait(driver, 2).until(
+            EC.presence_of_element_located((By.ID, "mainForm:master:messageSection:warn"))
+        ).text.strip()
+        if mensagem_sem_iptu:
+            print(f"Código {codigo} não possui IPTU.")
+            continue
+    except TimeoutException:
+        pass
 
-        # Verifica se a mensagem de sem iptu existe
-        try:
-            mensagem_sem_iptu = WebDriverWait(driver, 2).until(EC.presence_of_element_located((By.ID, "mainForm:master:messageSection:warn"))).text.strip()
-            if mensagem_sem_iptu:
-                print(f"Código {codigo} não possui IPTU.")
-                continue
-        except TimeoutException:
-            pass
-        
-        # Chama a função que procura e clica em um elemento. Tenta clicar no botão de débitos em aberto
-        safe_click(driver, By.ID, "P0")
+    # Clique em débitos em aberto
+    safe_click(driver, By.ID, "P0")
+    time.sleep(2)
+
+    # Verifica se existe seletor de quantidade de parcelas
+    try:
+        marcar_qtd_parcelas = WebDriverWait(driver, 5).until(
+            EC.element_to_be_clickable((By.XPATH, "//*[contains(@id, 'selectedUnica')]"))
+        )
+        print("Selecionando quantidade de parcelas...")
+        driver.execute_script("arguments[0].click();", marcar_qtd_parcelas)
         time.sleep(2)
+    except TimeoutException:
+        print("Seletor de parcelas não encontrado — seguindo normalmente.")
+    except Exception as e:
+        print(f"Erro ao tentar clicar em quantidade de parcelas: {e}")
 
-        try:
-            marcar_qtd_parcelas = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.ID, "mainForm:P:0:F:0:resumo:4:selectedUnica")))
-            print("Selecionando quantidade de parcelas...")
-            driver.execute_script("arguments[0].click();", marcar_qtd_parcelas)
-            time.sleep(2)
-        except TimeoutException:
-            print("Seletor de parcelas não encontrado — seguindo normalmente.")
-        except Exception as e:
-            print(f"Erro ao tentar clicar em quantidade de parcelas: {e}")
+    # Clica em marcar todas as parcelas
+    if safe_click(driver, By.ID, "selectAll"):
+        print("Parcelas marcadas com sucesso.")
+    else:
+        print("Falha ao marcar parcelas.")
 
-        time.sleep(2)
+    time.sleep(2)
 
-        # Chama a função que procura e clica em um elemento. Tenta clicar no botão de marcar todas
-        safe_click(driver, By.ID, "selectAll")
+    # Clica em emitir guia (se disponível)
+    #if safe_click(driver, By.ID, "mainForm:emitirUnificada"):
+    #    print("Clicou em emissão.")
+    #else:
+    #    print("Botão de emissão não encontrado ou não clicável.")
 
-        time.sleep(2)
-
-        if safe_click(driver, By.ID, "mainForm:emitirUnificada"):
-            print("Clicou em emissão")
-        else: 
-            print("Não clicou")
 
 print("Deu boa")
 time.sleep(5)
