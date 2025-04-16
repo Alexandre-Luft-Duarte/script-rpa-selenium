@@ -2,11 +2,26 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
-from utils import ler_codigos_csv, safe_click, configurar_chrome_com_download
+from utils import ler_codigos_csv, safe_click, aguardar_download_pdf
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import time, pyautogui
+import time, os
 from selenium.common.exceptions import TimeoutException
+
+
+
+
+# Caminho absoluto da pasta pdfs_iptu
+pasta_download = os.path.join(os.path.expanduser("~"), "Área de Trabalho", "pdfs_iptu")
+os.makedirs(pasta_download, exist_ok=True)
+
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_experimental_option("prefs", {
+    "download.default_directory": pasta_download,
+    "download.prompt_for_download": False,
+    "download.directory_upgrade": True,
+    "plugins.always_open_pdf_externally": True  # Faz com que o Chrome baixe o PDF em vez de abrir
+})
 
 
 # Inicializa o Chrome
@@ -113,20 +128,18 @@ for cont, codigo in enumerate(ler_codigos_csv(), 1):
     else:
         print("Falha ao marcar parcelas.")
 
-    time.sleep(2)
+    time.sleep(3)
 
     # Clica em emitir guia (se disponível)
     if safe_click(driver, By.ID, "mainForm:emitirUnificada"):
         print("Clicou em emissão.")
+    try:
+        caminho_pdf = aguardar_download_pdf(pasta_download, nome_parcial=str(codigo))
+        print(f"[{codigo}] PDF salvo em: {caminho_pdf}")
+    except TimeoutError as e:
+        print(f"[{codigo}] Erro ao baixar o PDF: {e}")
     else:
         print("Botão de emissão não encontrado ou não clicável.")
-
-    # Baixa o pdf, jogar para uma pasta específica e voltar para o site do betha
-    time.sleep(10)
-    pyautogui.hotkey('ctrl', 's')
-    pyautogui.press('enter')
-    pyautogui.hotkey('alt', 'f4')
-
 
 print("Deu boa")
 time.sleep(5)
