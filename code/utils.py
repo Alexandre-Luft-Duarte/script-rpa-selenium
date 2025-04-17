@@ -3,6 +3,10 @@ from selenium.common.exceptions import StaleElementReferenceException, TimeoutEx
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+import os
 
 
 # Função para ler o arquivo com os códigos do imóveis
@@ -41,10 +45,6 @@ def safe_click(driver, by, value, timeout=10, tentativas=2):
 
 
 
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-import os
 
 def iniciar_driver(download_dir="pdfs_iptu"):
     os.makedirs(download_dir, exist_ok=True)
