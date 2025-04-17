@@ -2,8 +2,7 @@ import pandas as pd
 from selenium.common.exceptions import StaleElementReferenceException, TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import time, os, requests
-
+import time
 
 # Função para ler o arquivo com os códigos do imóveis
 def ler_codigos_csv(caminho_csv="arquivo/iptu_96_25032025.csv"):
@@ -26,24 +25,24 @@ def safe_click(driver, by, value, timeout=10, tentativas=2):
     return False
 
 
+def iniciar_driver(download_dir="pdfs_iptu"):
+    from selenium import webdriver
+    from selenium.webdriver.chrome.service import Service
+    from webdriver_manager.chrome import ChromeDriverManager
+    import os
 
-# Função para jogar o pdf em uma pasta específica
-import time
-import os
+    os.makedirs(download_dir, exist_ok=True)
+    path = os.path.abspath(download_dir)
 
-def aguardar_download_pdf(pasta_destino, nome_parcial=None, timeout=30):
-    """
-    Aguarda até que um PDF seja baixado para a pasta destino.
-    Se nome_parcial for passado, verifica se o nome contém essa substring.
-    """
-    tempo_inicial = time.time()
-    while time.time() - tempo_inicial < timeout:
-        for arquivo in os.listdir(pasta_destino):
-            if arquivo.endswith(".pdf") and (nome_parcial in arquivo if nome_parcial else True):
-                caminho_arquivo = os.path.join(pasta_destino, arquivo)
-                if not arquivo.endswith(".crdownload"):  # Garante que o download terminou
-                    return caminho_arquivo
-        time.sleep(1)
-    raise TimeoutError("PDF não foi baixado dentro do tempo limite.")
+    chrome_options = webdriver.ChromeOptions()
+    prefs = {
+        "download.default_directory": path,
+        "download.prompt_for_download": False,
+        "download.directory_upgrade": True,
+        "plugins.always_open_pdf_externally": True  # ESSENCIAL
+    }
+    chrome_options.add_experimental_option("prefs", prefs)
+
+    return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
 
