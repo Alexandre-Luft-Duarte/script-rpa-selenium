@@ -1,14 +1,12 @@
-
-from selenium import webdriver
 from selenium.webdriver.common.by import By
-from utils import ler_codigos_csv, safe_click, iniciar_navegacao_iptu, iniciar_driver
+from utils import ler_codigos_csv, safe_click, iniciar_navegacao_iptu, iniciar_driver, baixar_pdf_iptu
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 from selenium.common.exceptions import TimeoutException
 
 
-driver = iniciar_driver("pdfs_iptu")
+driver = iniciar_driver("pdfs_iptu")    
 iniciar_navegacao_iptu(driver)
 
 # Inserindo os códigos dos imóveis
@@ -51,19 +49,20 @@ for cont, codigo in enumerate(ler_codigos_csv(), 1):
 
     # Verifica se existe seletor de quantidade de parcelas
     try:
-        marcar_qtd_parcelas = WebDriverWait(driver, 5).until(
-        EC.presence_of_element_located((By.XPATH, "//input[contains(@id, 'selectedUnica')]"))
+        input_parcela = WebDriverWait(driver, 5).until(
+            EC.presence_of_element_located((By.XPATH, "//input[contains(@id, 'selectedUnica')]"))
         )
-        if not marcar_qtd_parcelas.is_selected:
-            driver.execute_script("arguments[0].click();", marcar_qtd_parcelas)
-            print("Selecionando quantidade de parcelas...")
-            time.sleep(2)
+
+        if not input_parcela.is_selected():
+            print("Input de parcela única ainda não selecionado. Forçando clique JS...")
+            driver.execute_script("arguments[0].click();", input_parcela)
+            time.sleep(1)
         else:
-            print("Parcela já selecionada")
-    except TimeoutException:
-        print("Seletor de parcelas não encontrado — seguindo normalmente.")
+            print("Parcela única já está selecionada.")
     except Exception as e:
-        print(f"Erro ao tentar clicar em quantidade de parcelas: {e}")
+        print(f"Erro ao clicar na parcela única: {e}")
+
+
 
     # Clica em marcar todas as parcelas
     if safe_click(driver, By.ID, "selectAll"):
@@ -74,10 +73,12 @@ for cont, codigo in enumerate(ler_codigos_csv(), 1):
     time.sleep(3)
 
     # Clica em emitir guia (se disponível)
-    #if safe_click(driver, By.ID, "mainForm:emitirUnificada"):
-     #   print("Clicou em emissão.")
-    #else:
-     #   print("Botão de emissão não encontrado ou não clicável.")
+    if safe_click(driver, By.ID, "mainForm:emitirUnificada"):
+       print("Clicou em emissão.")
+       baixar_pdf_iptu(driver, codigo)
+    else:
+       print("Botão de emissão não encontrado ou não clicável.")
+
     
 
 print("Deu boa")

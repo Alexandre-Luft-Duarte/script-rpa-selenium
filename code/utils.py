@@ -2,11 +2,12 @@ import pandas as pd
 from selenium.common.exceptions import StaleElementReferenceException, TimeoutException, ElementClickInterceptedException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import time, os
+import time, os, subprocess
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
+
 
 
 # Função para ler o arquivo com os códigos do imóveis
@@ -87,6 +88,40 @@ def safe_click(driver, by, value, timeout=10, tentativas=2):
 
     print(f"Não foi possível clicar no elemento {value} após {tentativas} tentativas.")
     return False
+
+
+
+def baixar_pdf_iptu(driver, codigo, pasta_download="pdfs_iptu"):
+    aba_principal = driver.current_window_handle
+    abas_antes = driver.window_handles
+
+    print("Aguardando nova aba ou fallback para aba atual...")
+    try:
+        WebDriverWait(driver, 5).until(lambda d: len(d.window_handles) > len(abas_antes))
+        nova_aba = [aba for aba in driver.window_handles if aba not in abas_antes][0]
+        driver.switch_to.window(nova_aba)
+        print("Nova aba detectada.")
+        nova_aba_aberta = True
+    except TimeoutException:
+        print("Nenhuma nova aba foi aberta. Usando aba atual.")
+        nova_aba_aberta = False
+
+    # Espera a URL mudar e o PDF carregar
+    time.sleep(2)
+    pdf_url = driver.current_url
+    print(f"URL do PDF: {pdf_url}")
+
+    # Baixa o PDF com wget
+    nome_arquivo = os.path.join(pasta_download, f"iptu_{codigo}.pdf")
+    subprocess.run(["wget", "-O", nome_arquivo, pdf_url])
+    print(f"PDF baixado como: {nome_arquivo}")
+
+    # Fecha aba nova se foi aberta e volta para principal
+    if nova_aba_aberta:
+        driver.close()
+        driver.switch_to.window(aba_principal)
+
+
 
 
 
