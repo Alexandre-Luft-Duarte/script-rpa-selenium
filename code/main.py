@@ -1,49 +1,15 @@
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from utils import ler_codigos_csv, safe_click, iniciar_driver
+from utils import ler_codigos_csv, safe_click, iniciar_navegacao_iptu, iniciar_driver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 from selenium.common.exceptions import TimeoutException
 
 
-# Inicializa o Chrome
 driver = iniciar_driver("pdfs_iptu")
-driver.maximize_window()
-
-# Abre e navega no site da prefeitura
-driver.get("https://www.saomiguel.sc.gov.br/")
-
-time.sleep(3)
-
-# Clica na barra de pesquisa
-botao_servicos = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.CLASS_NAME, "form-control")))
-botao_servicos.click()
-
-# Pesquisa iptu
-botao_servicos.send_keys('IPTU')
-
-# Clica no botão de pesquisar
-botao_pesquisar_iptu = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.CLASS_NAME, 'icon-smo-search')))
-botao_pesquisar_iptu.click()
-
-time.sleep(3)
-
-# Clica em iptu
-botao_iptu = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.XPATH, "/html/body/main/div/div[2]/div/a[1]")))
-botao_iptu.click()
-
-time.sleep(10)
-
-# Seleciona uma aba diferente
-abas = driver.window_handles
-driver.switch_to.window(abas[1])
-
-# Abre e Começa a navegar no site do betha
-driver.get('https://e-gov.betha.com.br/cdweb/03114-473/contribuinte/rel_guiaiptu.faces')
-
-time.sleep(3)
+iniciar_navegacao_iptu(driver)
 
 # Inserindo os códigos dos imóveis
 for cont, codigo in enumerate(ler_codigos_csv(), 1):
@@ -51,16 +17,10 @@ for cont, codigo in enumerate(ler_codigos_csv(), 1):
 
     if cont == 1:
         # Primeiro acesso: clica no botão que revela o campo de pesquisa
-        botao_codigo_imovel = WebDriverWait(driver, 30).until(
-            EC.visibility_of_element_located((By.XPATH, "/html/body/div[1]/div[2]/div/div/div/form/div[1]/div[1]/div[2]/div/div[1]/div[3]/div/div/div/a"))
-        )
-        botao_codigo_imovel.click()
+        safe_click(driver, By.XPATH, "/html/body/div[1]/div[2]/div/div/div/form/div[1]/div[1]/div[2]/div/div[1]/div[3]/div/div/div/a")
     else:
         # Clica no botão de nova consulta
-        botao_nova_consulta = WebDriverWait(driver, 30).until(
-            EC.visibility_of_element_located((By.XPATH, "/html/body/div[1]/div[2]/div/div/div/form/div[1]/div[1]/div[3]/span/input"))
-        )
-        botao_nova_consulta.click()
+        safe_click(driver, By.XPATH, "/html/body/div[1]/div[2]/div/div/div/form/div[1]/div[1]/div[3]/span/input")
         time.sleep(1)
 
     # Campo para digitar o código
@@ -71,10 +31,7 @@ for cont, codigo in enumerate(ler_codigos_csv(), 1):
     campo_input_imovel.send_keys(str(codigo))
 
     # Clica no botão para pesquisar
-    botao_continuar_pesquisar_imovel = WebDriverWait(driver, 30).until(
-        EC.visibility_of_element_located((By.ID, "mainForm:btIImoveis"))
-    )
-    botao_continuar_pesquisar_imovel.click()
+    safe_click(driver, By.ID, "mainForm:btIImoveis")
     time.sleep(1)
 
     # Verifica se apareceu a mensagem de "sem IPTU"
@@ -95,11 +52,14 @@ for cont, codigo in enumerate(ler_codigos_csv(), 1):
     # Verifica se existe seletor de quantidade de parcelas
     try:
         marcar_qtd_parcelas = WebDriverWait(driver, 5).until(
-            EC.element_to_be_clickable((By.XPATH, "//*[contains(@id, 'selectedUnica')]"))
+        EC.presence_of_element_located((By.XPATH, "//input[contains(@id, 'selectedUnica')]"))
         )
-        print("Selecionando quantidade de parcelas...")
-        driver.execute_script("arguments[0].click();", marcar_qtd_parcelas)
-        time.sleep(2)
+        if not marcar_qtd_parcelas.is_selected:
+            driver.execute_script("arguments[0].click();", marcar_qtd_parcelas)
+            print("Selecionando quantidade de parcelas...")
+            time.sleep(2)
+        else:
+            print("Parcela já selecionada")
     except TimeoutException:
         print("Seletor de parcelas não encontrado — seguindo normalmente.")
     except Exception as e:
@@ -114,10 +74,10 @@ for cont, codigo in enumerate(ler_codigos_csv(), 1):
     time.sleep(3)
 
     # Clica em emitir guia (se disponível)
-    if safe_click(driver, By.ID, "mainForm:emitirUnificada"):
-        print("Clicou em emissão.")
-    else:
-        print("Botão de emissão não encontrado ou não clicável.")
+    #if safe_click(driver, By.ID, "mainForm:emitirUnificada"):
+     #   print("Clicou em emissão.")
+    #else:
+     #   print("Botão de emissão não encontrado ou não clicável.")
     
 
 print("Deu boa")
