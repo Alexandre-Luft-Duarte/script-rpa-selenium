@@ -1,5 +1,6 @@
 from selenium.webdriver.common.by import By
-from utils import ler_codigos_csv, safe_click, iniciar_navegacao_iptu, iniciar_driver, baixar_pdf_iptu
+from utils import ler_codigos_csv, safe_click, iniciar_navegacao_iptu, iniciar_driver, baixar_pdf_iptu, selecionar_parcela_unica
+
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
@@ -48,20 +49,7 @@ for cont, codigo in enumerate(ler_codigos_csv(), 1):
     time.sleep(2)
 
     # Verifica se existe seletor de quantidade de parcelas
-    try:
-        input_parcela = WebDriverWait(driver, 5).until(
-            EC.presence_of_element_located((By.XPATH, "//input[contains(@id, 'selectedUnica')]"))
-        )
-
-        if not input_parcela.is_selected():
-            print("Input de parcela única ainda não selecionado. Forçando clique JS...")
-            driver.execute_script("arguments[0].click();", input_parcela)
-            time.sleep(1)
-        else:
-            print("Parcela única já está selecionada.")
-    except Exception as e:
-        print(f"Erro ao clicar na parcela única: {e}")
-
+    selecionar_parcela_unica(driver)
 
 
     # Clica em marcar todas as parcelas
@@ -75,7 +63,7 @@ for cont, codigo in enumerate(ler_codigos_csv(), 1):
     # Clica em emitir guia (se disponível)
     if safe_click(driver, By.ID, "mainForm:emitirUnificada"):
        print("Clicou em emissão.")
-       baixar_pdf_iptu(driver, codigo)
+       baixar_pdf_iptu("pdfs_iptu", f"iptu_{codigo}.pdf")
     else:
        print("Botão de emissão não encontrado ou não clicável.")
 

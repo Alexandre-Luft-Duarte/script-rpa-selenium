@@ -89,39 +89,36 @@ def safe_click(driver, by, value, timeout=10, tentativas=2):
     print(f"Não foi possível clicar no elemento {value} após {tentativas} tentativas.")
     return False
 
-
-
-def baixar_pdf_iptu(driver, codigo, pasta_download="pdfs_iptu"):
-    aba_principal = driver.current_window_handle
-    abas_antes = driver.window_handles
-
-    print("Aguardando nova aba ou fallback para aba atual...")
+def selecionar_parcela_unica(driver):
     try:
-        WebDriverWait(driver, 5).until(lambda d: len(d.window_handles) > len(abas_antes))
-        nova_aba = [aba for aba in driver.window_handles if aba not in abas_antes][0]
-        driver.switch_to.window(nova_aba)
-        print("Nova aba detectada.")
-        nova_aba_aberta = True
-    except TimeoutException:
-        print("Nenhuma nova aba foi aberta. Usando aba atual.")
-        nova_aba_aberta = False
-
-    # Espera a URL mudar e o PDF carregar
-    time.sleep(2)
-    pdf_url = driver.current_url
-    print(f"URL do PDF: {pdf_url}")
-
-    # Baixa o PDF com wget
-    nome_arquivo = os.path.join(pasta_download, f"iptu_{codigo}.pdf")
-    subprocess.run(["wget", "-O", nome_arquivo, pdf_url])
-    print(f"PDF baixado como: {nome_arquivo}")
-
-    # Fecha aba nova se foi aberta e volta para principal
-    if nova_aba_aberta:
-        driver.close()
-        driver.switch_to.window(aba_principal)
+        input_parcela = WebDriverWait(driver, 5).until(
+            EC.presence_of_element_located((By.XPATH, "//input[contains(@id, 'selectedUnica')]"))
+        )
+        if not input_parcela.is_selected():
+            print("Parcela única não selecionada. Clicando...")
+            driver.execute_script("arguments[0].click();", input_parcela)
+            time.sleep(1)
+        else:
+            print("Parcela única já está selecionada. Pulando clique.")
+    except Exception as e:
+        print(f"Erro ao selecionar parcela única: {e}")
 
 
+def baixar_pdf_iptu(download_dir, nome_destino, timeout=15):
+    inicio = time.time()
+    while time.time() - inicio < timeout:
+        arquivos = [f for f in os.listdir(download_dir) if f.endswith(".pdf")]
+        if arquivos:
+            arquivo_baixado = sorted(
+                arquivos, key=lambda x: os.path.getctime(os.path.join(download_dir, x)), reverse=True
+            )[0]
+            caminho_origem = os.path.join(download_dir, arquivo_baixado)
+            caminho_destino = os.path.join(download_dir, nome_destino)
+            os.rename(caminho_origem, caminho_destino)
+            print(f"Renomeado para: {caminho_destino}")
+            return
+        time.sleep(1)
+    print("⚠️ Tempo de espera para o download excedido.")
 
 
 
