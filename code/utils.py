@@ -9,7 +9,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 
 
-
 # Função para ler o arquivo com os códigos do imóveis
 def ler_codigos_csv(caminho_csv="arquivo/iptu_96_25032025.csv"):
     df = pd.read_csv(caminho_csv, delimiter=";")
@@ -89,6 +88,7 @@ def safe_click(driver, by, value, timeout=10, tentativas=2):
     print(f"Não foi possível clicar no elemento {value} após {tentativas} tentativas.")
     return False
 
+
 def selecionar_parcela_unica(driver):
     try:
         input_parcela = WebDriverWait(driver, 5).until(
@@ -104,21 +104,48 @@ def selecionar_parcela_unica(driver):
         print(f"Erro ao selecionar parcela única: {e}")
 
 
-def baixar_pdf_iptu(download_dir, nome_destino, timeout=15):
+def aguardar_download_renomear(driver, download_dir, nome_destino, timeout=15):
+    # Captura a aba atual no momento da chamada
+    janela_original = driver.current_window_handle
+
+    # Aguarda nova aba ser aberta (com no máximo 5 tentativas)
+    for _ in range(5):
+        novas_janelas = [h for h in driver.window_handles if h != janela_original]
+        if novas_janelas:
+            break
+        time.sleep(1)
+    else:
+        print("⚠️ Nenhuma nova aba foi detectada.")
+        return
+
+    nova_janela = novas_janelas[0]
+    driver.switch_to.window(nova_janela)
+
+    # Aguarda download e renomeia
     inicio = time.time()
     while time.time() - inicio < timeout:
         arquivos = [f for f in os.listdir(download_dir) if f.endswith(".pdf")]
         if arquivos:
             arquivo_baixado = sorted(
-                arquivos, key=lambda x: os.path.getctime(os.path.join(download_dir, x)), reverse=True
-            )[0]
+                arquivos, key=lambda x: os.path.getctime(os.path.join(download_dir, x)), reverse=True)[0]
             caminho_origem = os.path.join(download_dir, arquivo_baixado)
             caminho_destino = os.path.join(download_dir, nome_destino)
             os.rename(caminho_origem, caminho_destino)
-            print(f"Renomeado para: {caminho_destino}")
+            print(f"✅ Renomeado para: {caminho_destino}")
+
+            driver.close()
+            driver.switch_to.window(janela_original)
             return
+
         time.sleep(1)
+
     print("⚠️ Tempo de espera para o download excedido.")
+    # Garante retorno mesmo em falha
+    if len(driver.window_handles) > 1:
+        driver.close()
+    driver.switch_to.window(janela_original)
+
+
 
 
 

@@ -1,6 +1,5 @@
 from selenium.webdriver.common.by import By
-from utils import ler_codigos_csv, safe_click, iniciar_navegacao_iptu, iniciar_driver, baixar_pdf_iptu, selecionar_parcela_unica
-
+from utils import ler_codigos_csv, safe_click, iniciar_navegacao_iptu, iniciar_driver, aguardar_download_renomear, selecionar_parcela_unica
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
@@ -22,7 +21,7 @@ for cont, codigo in enumerate(ler_codigos_csv(), 1):
         safe_click(driver, By.XPATH, "/html/body/div[1]/div[2]/div/div/div/form/div[1]/div[1]/div[3]/span/input")
         time.sleep(1)
 
-    # Campo para digitar o código
+    # Campo para digitar o caguardar_download_e_fechar_abaódigo
     campo_input_imovel = WebDriverWait(driver, 30).until(
         EC.visibility_of_element_located((By.ID, "mainForm:iImoveis"))
     )
@@ -63,7 +62,7 @@ for cont, codigo in enumerate(ler_codigos_csv(), 1):
     # Clica em emitir guia (se disponível)
     if safe_click(driver, By.ID, "mainForm:emitirUnificada"):
        print("Clicou em emissão.")
-       baixar_pdf_iptu("pdfs_iptu", f"iptu_{codigo}.pdf")
+       aguardar_download_renomear(driver, "pdfs_iptu", f"iptu_{codigo}.pdf")
     else:
        print("Botão de emissão não encontrado ou não clicável.")
 
