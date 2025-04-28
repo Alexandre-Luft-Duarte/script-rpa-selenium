@@ -11,7 +11,6 @@ def extrair_codigo():
     for nome_pdf in arquivos:
         if nome_pdf.lower().endswith(".pdf"):
             caminho_pdf = os.path.join(pasta, nome_pdf)
-            print(f"\nPDF: {nome_pdf}")
             with pdfplumber.open(caminho_pdf) as pdf:
                 for pagina in pdf.pages:
                     texto = pagina.extract_text()
@@ -26,7 +25,7 @@ def extrair_codigo():
                                     codigos_validos.append(somente_digitos)
 
                         if codigos_validos:
-                            print(f"Códigos de 47 dígitos encontrados no PDF {nome_pdf}:")
+                            print(f"\nCódigos de 47 dígitos encontrados no PDF {nome_pdf}:")
                             for cod in codigos_validos:
                                 print(f"{cod}")
                         else:
