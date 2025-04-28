@@ -4,7 +4,7 @@ import pdfplumber, os, re, logging
 logging.getLogger("pdfminer").setLevel(logging.ERROR)
 
 # Caminho absoluto da pasta pdfs_teste
-pasta = os.path.join(os.path.dirname(__file__), "/home/flexpro/Área de Trabalho/RPA/iptu_selenium/emissao_pdfs/pdfs_iptu")
+pasta = os.path.join(os.path.dirname(__file__), "/home/flexpro/Área de Trabalho/RPA/iptu_selenium/backend/emissao_pdfs/pdfs_iptu")
 arquivos = os.listdir(pasta)
 
 def extrair_codigo():
