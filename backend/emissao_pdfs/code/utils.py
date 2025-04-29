@@ -139,3 +139,4 @@ def aguardar_download_renomear(driver, download_dir, nome_destino, timeout=15):
     if len(driver.window_handles) > 1:
         driver.close()
     driver.switch_to.window(janela_original)
+
