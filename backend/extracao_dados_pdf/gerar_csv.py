@@ -1,5 +1,5 @@
 import csv
-from utils import extrair_codigo
+from extracao_dados_pdf.utils import extrair_codigo
 
 def arquivo_csv(dicionario, nome_arquivo):
     with open(nome_arquivo, mode='w', newline='') as arquivo:
