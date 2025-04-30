@@ -1,7 +1,7 @@
 import csv
-from dados import extrair_codigo
+from extract import get_data
 
-def arquivo_csv(dicionario, nome_arquivo):
+def file_csv(dicionario, nome_arquivo):
     with open(nome_arquivo, mode='w', newline='') as arquivo:
         writer = csv.writer(arquivo)
         writer.writerow(['Código Imóvel', 'Linha Digitável', 'Valor a Pagar'])  # Cabeçalho
@@ -12,6 +12,5 @@ def arquivo_csv(dicionario, nome_arquivo):
             for codigo in info['codigos']:
                 writer.writerow([nome_limpo, f"'{codigo}", valor])
 
-dados = extrair_codigo()
-arquivo_csv(dados, 'iptus.csv')
-
+data = get_data()
+file_csv(data, 'iptus.csv')

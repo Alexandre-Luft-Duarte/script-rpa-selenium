@@ -13,7 +13,7 @@ from selenium.common.exceptions import (
 )
 
 # Lê o arquivo CSV contendo os códigos dos imóveis e retorna uma lista com esses códigos.
-def ler_codigos_csv(caminho_csv="arquivo/iptu_96_25032025.csv"):
+def read_codes_csv(caminho_csv="file_csv/iptu_96_25032025.csv"):
     # Usa o pandas para ler o arquivo CSV e separa os dados com o delimitador ';'.
     df = pd.read_csv(caminho_csv, delimiter=";")
     # Retorna a coluna 'imovel_prefeitura' como uma lista de códigos de imóveis.
@@ -21,14 +21,14 @@ def ler_codigos_csv(caminho_csv="arquivo/iptu_96_25032025.csv"):
 
 
 # Inicia o driver do Chrome com configurações personalizadas para os downloads.
-def iniciar_driver(download_dir="pdfs_iptu"):
+def start_driver(download_dir="pdfs_iptu"):
     os.makedirs(download_dir, exist_ok=True) # Cria o diretório para os downloads, caso não exista.
-    caminho_absoluto = os.path.abspath(download_dir)
+    absolute_path = os.path.abspath(download_dir)
 
     # Configurações do Chrome para definir o diretório de download e desabilitar a solicitação de confirmação.
     chrome_options = webdriver.ChromeOptions()
     prefs = {
-        "download.default_directory": caminho_absoluto,  # Define o diretório de downloads.
+        "download.default_directory": absolute_path,  # Define o diretório de downloads.
         "download.prompt_for_download": False,  # Desabilita o prompt de confirmação de download.
         "download.directory_upgrade": True,  # Permite atualizar o diretório de download.
         "plugins.always_open_pdf_externally": True,  # Força a abertura de arquivos PDF no navegador, sem exibir o visualizador.
@@ -40,16 +40,16 @@ def iniciar_driver(download_dir="pdfs_iptu"):
 
 
 # Navega até a página de consulta do IPTU no site de São Miguel.
-def iniciar_navegacao_iptu(driver):
+def start_navegation(driver):
     driver.maximize_window()
     driver.get("https://www.saomiguel.sc.gov.br/") # Acessa a página principal do site da Prefeitura.
     time.sleep(3)
 
     # Espera até que a barra de busca esteja visível e, em seguida, realiza a pesquisa por "IPTU".
-    barra_busca = WebDriverWait(driver, 30).until(
+    search = WebDriverWait(driver, 30).until(
         EC.visibility_of_element_located((By.CLASS_NAME, "form-control"))
     )
-    barra_busca.send_keys("IPTU")
+    search.send_keys("IPTU")
 
     # Clica no ícone de busca para realizar a pesquisa.
     safe_click(driver, By.CLASS_NAME, "icon-smo-search")
@@ -60,8 +60,8 @@ def iniciar_navegacao_iptu(driver):
     time.sleep(10)
 
     # Troca para a nova aba que é aberta (betha).
-    abas = driver.window_handles
-    driver.switch_to.window(abas[1])
+    tabs = driver.window_handles
+    driver.switch_to.window(tabs[1])
 
     # Acessa a URL do sistema de consulta do IPTU.
     driver.get("https://e-gov.betha.com.br/cdweb/03114-473/contribuinte/rel_guiaiptu.faces")
@@ -69,8 +69,8 @@ def iniciar_navegacao_iptu(driver):
 
 
 # Tenta clicar em um elemento com segurança, realizando várias tentativas e fallback via JavaScript.
-def safe_click(driver, by, value, timeout=10, tentativas=2):
-    for tentativa in range(tentativas):
+def safe_click(driver, by, value, timeout=10, attempts=2):
+    for attempt in range(attempts):
         try:
             # Aguarda até que o elemento esteja visível.
             el = WebDriverWait(driver, timeout).until(
@@ -91,15 +91,15 @@ def safe_click(driver, by, value, timeout=10, tentativas=2):
 
 
 # Seleciona a opção de parcela única se estiver disponível no sistema.
-def selecionar_parcela_unica(driver):
+def select_single_installment(driver):
     try:
         # Aguarda até que o input da parcela única esteja visível na página.
-        input_parcela = WebDriverWait(driver, 5).until(
+        input_installment = WebDriverWait(driver, 5).until(
             EC.presence_of_element_located((By.XPATH, "//input[contains(@id, 'selectedUnica')]"))
         )
         # Se a parcela não estiver selecionada, clica nela para selecioná-la.
-        if not input_parcela.is_selected():
-            driver.execute_script("arguments[0].click();", input_parcela)
+        if not input_installment.is_selected():
+            driver.execute_script("arguments[0].click();", input_installment)
             time.sleep(1)
     except Exception as e:
         # Caso ocorra algum erro ao tentar selecionar a parcela, exibe a mensagem de erro.
@@ -107,29 +107,29 @@ def selecionar_parcela_unica(driver):
 
 
 # Aguarda o download do PDF e renomeia o arquivo para o nome desejado.
-def aguardar_download_renomear(driver, download_dir, nome_destino, timeout=15):
+def wait_download(driver, download_dir, nome_destino, timeout=15):
     janela_original = driver.current_window_handle
     for _ in range(5):
         # Verifica se novas janelas foram abertas após o clique de emissão.
-        novas_janelas = [h for h in driver.window_handles if h != janela_original]
-        if novas_janelas:
+        new_windows = [h for h in driver.window_handles if h != janela_original]
+        if new_windows:
             break
         time.sleep(1)
     else:
         # Se não houver novas janelas, retorna sem realizar o processo.
         return
 
-    nova_janela = novas_janelas[0]
-    driver.switch_to.window(nova_janela)
+    new_window = new_windows[0]
+    driver.switch_to.window(new_window)
 
     inicio = time.time()
     while time.time() - inicio < timeout:
         # Verifica se algum arquivo PDF foi baixado no diretório especificado.
-        arquivos = [f for f in os.listdir(download_dir) if f.endswith(".pdf")]
-        if arquivos:
+        files = [f for f in os.listdir(download_dir) if f.endswith(".pdf")]
+        if files:
             # Se o arquivo foi baixado, seleciona o mais recente e renomeia.
-            arquivo_baixado = sorted(arquivos, key=lambda x: os.path.getctime(os.path.join(download_dir, x)))[-1]
-            os.rename(os.path.join(download_dir, arquivo_baixado), os.path.join(download_dir, nome_destino))
+            downloaded_files = sorted(files, key=lambda x: os.path.getctime(os.path.join(download_dir, x)))[-1]
+            os.rename(os.path.join(download_dir, downloaded_files), os.path.join(download_dir, nome_destino))
             driver.close()   # Fecha a janela de download e retorna para a janela original.
             driver.switch_to.window(janela_original)
             return
