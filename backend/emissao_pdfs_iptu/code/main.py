@@ -3,7 +3,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 import time
-from backend.extracao_dados_pdf.utils import (
+from backend.extracao_dados_pdf.dados import (
     ler_codigos_csv,
     safe_click,
     iniciar_navegacao_iptu,
