@@ -1,27 +1,25 @@
 import csv
 from extract import get_data  # Importa a função que extrai os dados dos PDFs
 
-# Função para gerar um arquivo CSV com os dados extraídos
 def file_csv(dicionario, nome_arquivo):
     # Abre (ou cria) o arquivo CSV no modo escrita
-    with open(nome_arquivo, mode='w', newline='') as arquivo:
-        writer = csv.writer(arquivo)  # Cria um escritor CSV
-        # Escreve o cabeçalho das colunas no arquivo
-        writer.writerow(['Código Imóvel', 'Linha Digitável', 'Valor a Pagar'])
+    with open(nome_arquivo, mode='w', newline='', encoding='utf-8') as arquivo:
+        writer = csv.writer(arquivo)
+        # Cabeçalho
+        writer.writerow(['Código Imóvel', 'Linha Digitável', 'Valor a Pagar', 'Nosso número'])
 
-        # Percorre o dicionário retornado pela função get_data()
+        # Para cada PDF (imóvel) no dicionário...
         for imovel, info in dicionario.items():
-            # Remove prefixos e sufixos do nome do arquivo para extrair o "código do imóvel"
-            nome_limpo = imovel.replace('iptu_', '').replace('.pdf', '')
-            valor = info['valor']  # Valor a pagar associado a esse imóvel
+            # Extrai o "código do imóvel" do nome do arquivo
+            name = imovel.replace('iptu_', '').replace('.pdf', '')
+            linha_digitavel = info.get('codigo_barras', 'N/A')
+            valor = info.get('valor', 'N/A')
+            nosso_numero = info.get('nosso_numero', 'N/A')
 
-            # Para cada código de barras associado ao imóvel
-            for codigo in info['codigos']:
-                # Escreve uma linha no CSV com: código do imóvel, linha digitável (com aspas), e valor
-                writer.writerow([nome_limpo, f"'{codigo}", valor])
+            # Escreve uma única linha por imóvel
+            writer.writerow([name, f"'{linha_digitavel}", valor, f"'{nosso_numero}"])
 
-# Executa a extração dos dados dos PDFs
-data = get_data()
-
-# Gera o arquivo CSV com os dados extraídos
-file_csv(data, 'iptus.csv')
+# Executa a extração e gera o CSV
+if __name__ == '__main__':
+    data = get_data()
+    file_csv(data, 'iptus.csv')
