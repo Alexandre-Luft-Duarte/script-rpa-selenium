@@ -13,7 +13,7 @@ from selenium.common.exceptions import (
 )
 
 # Lê o arquivo CSV contendo os códigos dos imóveis e retorna uma lista com esses códigos.
-def read_codes_csv(caminho_csv="file_csv/iptu_96_25032025.csv"):
+def read_codes_csv(caminho_csv="backend/emission_pdfs_iptu/file_csv/iptu_96_25032025.csv"):
     # Usa o pandas para ler o arquivo CSV e separa os dados com o delimitador ';'.
     df = pd.read_csv(caminho_csv, delimiter=";")
     # Retorna a coluna 'imovel_prefeitura' como uma lista de códigos de imóveis.
