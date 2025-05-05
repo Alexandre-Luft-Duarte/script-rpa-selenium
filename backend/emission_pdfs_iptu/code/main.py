@@ -27,10 +27,16 @@ def process_code(driver, code, first_consultation=False):
         time.sleep(1)
 
     # Localiza o campo de input para o código do imóvel e insere o código
-    input_field = safe_click(driver, By.ID, "mainForm:iImoveis")
-    input_field.clear()  # Limpa o campo de entrada antes de digitar o código
-    input_field.send_keys(str(code))
-
+    try:
+        input_field = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.ID, "mainForm:iImoveis"))
+        )
+        input_field.clear()
+        input_field.send_keys(str(code))
+    except TimeoutException:
+        print(f"❌ Campo de código não encontrado para {code}. Pulando.")
+        return
+    
     # Clica no botão de pesquisa para buscar o imóvel
     safe_click(driver, By.ID, "mainForm:btIImoveis")
     time.sleep(1)
@@ -62,7 +68,7 @@ def process_code(driver, code, first_consultation=False):
     time.sleep(3)
 
     # Clica no botão de emissão de guia e aguarda o download do arquivo
-    if safe_click(driver, By.ID, "mainForm:emitirUnificada"):
+    if safe_click(driver, By.ID, "mainForm:emitir"):
         print("Clicou em emissão.")
         wait_download(driver, "pdfs_iptu", f"iptu_{code}.pdf")
     else:
@@ -77,7 +83,7 @@ def main():
     codigos = read_codes_csv()  # Lê os códigos dos imóveis do arquivo CSV
     for i, codigo in enumerate(codigos):
         # Processa o código atual, passando True para a primeira consulta e False para as demais
-        process_code(driver, codigo, primeira_consulta=(i == 0))
+        process_code(driver, codigo, first_consultation=(i == 0))
 
     print("Processo finalizado.")  # Exibe mensagem de finalização
     time.sleep(5)  # Aguarda 5 segundos antes de fechar o navegador
