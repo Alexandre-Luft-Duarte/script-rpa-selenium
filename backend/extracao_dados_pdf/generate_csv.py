@@ -6,7 +6,7 @@ def file_csv(dicionario, nome_arquivo):
     with open(nome_arquivo, mode='w', newline='', encoding='utf-8') as arquivo:
         writer = csv.writer(arquivo)
         # Cabeçalho
-        writer.writerow(['Código Imóvel', 'Linha Digitável', 'Valor a Pagar', 'Nosso número', 'Sacado'])
+        writer.writerow(['Codigo Imovel', 'Linha Digitavel', 'Valor a Pagar', 'Nosso numero', 'Sacado'])
 
         # Para cada PDF (imóvel) no dicionário...
         for imovel, info in dicionario.items():
