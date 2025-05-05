@@ -16,6 +16,7 @@ def get_data():
         barcode_code = None
         amount_to_pay = None
         our_number = None
+        sacado_name = None
 
         with pdfplumber.open(pdf_path) as pdf:
             for page in pdf.pages:
@@ -51,15 +52,24 @@ def get_data():
                     m = re.search(r'\b(\d{18})\b', text)
                     if m:
                         our_number = m.group(1)
+                
+                if sacado_name is None:
+                    m = re.search(r'-(?:\s*([A-ZÀ-Ÿ\/\. ]+?)\s*)-', text)
+                    if m:
+                        sacado_name = m.group(1)
+            
 
                 # se já tiver encontrado todos, pode parar
-                if barcode_code and amount_to_pay and our_number:
+                if barcode_code and amount_to_pay and our_number and sacado_name:
                     break
+
+            
 
         extracted_data[pdf_name] = {
             "codigo_barras": barcode_code or "N/A",
             "valor":        amount_to_pay or "N/A",
             "nosso_numero": our_number   or "N/A",
+            "nome": sacado_name or "N/A",
         }
 
     return extracted_data
