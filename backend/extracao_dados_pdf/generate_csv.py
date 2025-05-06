@@ -1,24 +1,38 @@
 import csv
 from extract import get_data  # Importa a função que extrai os dados dos PDFs
 
-def file_csv(dicionario, nome_arquivo):
-    # Abre (ou cria) o arquivo CSV no modo escrita
+def file_csv(dados, nome_arquivo):
+    # Detecta o maior número de linhas digitáveis entre os itens
+    max_linhas = 0
+    for item in dados:
+        qtd = sum(1 for k in item if k.startswith("linha_digitavel_"))
+        max_linhas = max(max_linhas, qtd)
+
+    # Cabeçalho dinâmico
+    cabecalho = ['arquivo']
+    cabecalho += [f'linha_digitavel_{i}' for i in range(1, max_linhas + 1)]
+    cabecalho += ['valor', 'nosso_numero', 'nome']
+
+    # Abre o CSV para escrita (sem aspas forçadas)
     with open(nome_arquivo, mode='w', newline='', encoding='utf-8') as arquivo:
         writer = csv.writer(arquivo)
-        # Cabeçalho
-        writer.writerow(['Código Imóvel', 'Linha Digitável', 'Valor a Pagar', 'Nosso número', 'Sacado'])
+        writer.writerow(cabecalho)
 
-        # Para cada PDF (imóvel) no dicionário...
-        for imovel, info in dicionario.items():
-            # Extrai o "código do imóvel" do nome do arquivo
-            name = imovel.replace('iptu_', '').replace('.pdf', '')
-            linha_digitavel = info.get('codigo_barras', 'N/A')
-            valor = info.get('valor', 'N/A')
-            nosso_numero = info.get('nosso_numero', 'N/A')
-            nome = info.get('nome')
+        for item in dados:
+            linha = [item.get('arquivo', '')]
 
-            # Escreve uma única linha por imóvel
-            writer.writerow([name, f"'{linha_digitavel}", valor, f"'{nosso_numero}", nome])
+            # Adiciona todas as linhas digitáveis (ou vazio se não houver)
+            for i in range(1, max_linhas + 1):
+                linha.append(item.get(f'linha_digitavel_{i}', ''))
+
+            # Adiciona campos finais
+            linha += [
+                item.get('valor', ''),
+                item.get('nosso_numero', ''),
+                item.get('nome', '')
+            ]
+
+            writer.writerow(linha)
 
 # Executa a extração e gera o CSV
 if __name__ == '__main__':
