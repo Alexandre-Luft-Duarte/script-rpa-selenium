@@ -32,6 +32,7 @@ def get_data():
                             break
                     if linha_digitavel:
                         break
+                    
 
                 # Adiciona a linha digitável de cada página SEM interromper o loop
                 row_data[f"linha_digitavel_{idx + 1}"] = linha_digitavel or "N/A"
