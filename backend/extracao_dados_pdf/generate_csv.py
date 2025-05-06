@@ -28,9 +28,10 @@ def file_csv(dados, nome_arquivo):
             # Adiciona campos finais
             linha += [
                 item.get('valor', ''),
-                item.get('nosso_numero', ''),
+                f"'{item.get('nosso_numero', '')}",
                 item.get('nome', '')
             ]
+
 
             writer.writerow(linha)
 
