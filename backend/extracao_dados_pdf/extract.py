@@ -15,7 +15,6 @@ def get_data():
         pdf_path = os.path.join(folder, pdf_name)
         row_data = {"arquivo": pdf_name}  # dicionário final da linha
         amount_to_pay = None
-        our_number = None
         sacado_name = None
 
         with pdfplumber.open(pdf_path) as pdf:
@@ -32,10 +31,20 @@ def get_data():
                             break
                     if linha_digitavel:
                         break
+                
+                our_number = None
+                for line in lines:
+                    for cand in re.findall(r'\b(\d{18})\b', line):
+                        digitos = re.sub(r'\D', '', cand)
+                        if len(digitos) == 18:
+                            our_number = cand.strip()
+                            break
+                    if our_number:
+                        break
                     
-
                 # Adiciona a linha digitável de cada página SEM interromper o loop
                 row_data[f"linha_digitavel_{idx + 1}"] = linha_digitavel or "N/A"
+                row_data[f"nosso_numero_{idx + 1}"] = our_number or "N/A"
 
                 # Os outros campos só precisam ser preenchidos uma vez
                 if amount_to_pay is None:
@@ -50,11 +59,6 @@ def get_data():
                         if all_vals:
                             amount_to_pay = all_vals[-1]
 
-                if our_number is None:
-                    m = re.search(r'\b(\d{18})\b', text)
-                    if m:
-                        our_number = m.group(1)
-
                 if sacado_name is None:
                     m = re.search(r'-(?:\s*([A-ZÀ-Ÿ\/\. ]+?)\s*)-', text)
                     if m:
@@ -62,10 +66,8 @@ def get_data():
 
         # Depois do loop:
         row_data["valor"] = amount_to_pay or "N/A"
-        row_data["nosso_numero"] = our_number or "N/A"
         row_data["nome"] = sacado_name or "N/A"
 
         extracted_data.append(row_data)
 
     return extracted_data
-
