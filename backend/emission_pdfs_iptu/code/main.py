@@ -34,7 +34,7 @@ def process_code(driver, code, first_consultation=False):
         input_field.clear()
         input_field.send_keys(str(code))
     except TimeoutException:
-        print(f"❌ Campo de código não encontrado para {code}. Pulando.")
+        print(f"Campo de código não encontrado para {code}. Pulando.")
         return
     
     # Clica no botão de pesquisa para buscar o imóvel

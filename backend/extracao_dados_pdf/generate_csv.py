@@ -1,24 +1,48 @@
 import csv
 from extract import get_data  # Importa a função que extrai os dados dos PDFs
 
-def file_csv(dicionario, nome_arquivo):
-    # Abre (ou cria) o arquivo CSV no modo escrita
+def file_csv(dados, nome_arquivo):
+    # Detecta o maior número de linhas digitáveis e de nossos números
+    max_linhas = 0
+    max_linhas_2 = 0
+    for item in dados:
+        qtd = sum(1 for k in item if k.startswith("linha_digitavel_"))
+        max_linhas = max(max_linhas, qtd)
+
+        qtd_2 = sum(1 for k in item if k.startswith("nosso_numero_"))
+        max_linhas_2 = max(max_linhas_2, qtd_2)
+
+    # Cabeçalho dinâmico
+    cabecalho = ['arquivo']
+    cabecalho += [f'linha_digitavel_{i}' for i in range(1, max_linhas + 1)]
+    cabecalho += [f'nosso_numero_{i}' for i in range(1, max_linhas_2 + 1)] 
+    cabecalho += ['valor', 'nome']
+
+    # Abre o CSV para escrita
     with open(nome_arquivo, mode='w', newline='', encoding='utf-8') as arquivo:
         writer = csv.writer(arquivo)
-        # Cabeçalho
-        writer.writerow(['Codigo Imovel', 'Linha Digitavel', 'Valor a Pagar', 'Nosso numero', 'Sacado'])
+        writer.writerow(cabecalho)
 
-        # Para cada PDF (imóvel) no dicionário...
-        for imovel, info in dicionario.items():
-            # Extrai o "código do imóvel" do nome do arquivo
-            name = imovel.replace('iptu_', '').replace('.pdf', '')
-            linha_digitavel = info.get('codigo_barras', 'N/A')
-            valor = info.get('valor', 'N/A')
-            nosso_numero = info.get('nosso_numero', 'N/A')
-            nome = info.get('nome')
 
-            # Escreve uma única linha por imóvel
-            writer.writerow([name, f"'{linha_digitavel}", valor, f"'{nosso_numero}", nome])
+        for item in dados:
+            linha = [item.get('arquivo', '')]
+
+            # Adiciona todas as linhas digitáveis
+            for i in range(1, max_linhas + 1):
+                linha.append(item.get(f'linha_digitavel_{i}', ''))
+
+            # Adiciona todos os nossos números
+            for i in range(1, max_linhas_2 + 1):
+                numero = item.get(f'nosso_numero_{i}', '')
+                linha.append(f"'{numero}" if numero else '')
+
+            # Adiciona campos finais
+            linha += [
+                item.get('valor', ''),
+                item.get('nome', '')
+            ]
+
+            writer.writerow(linha)
 
 # Executa a extração e gera o CSV
 if __name__ == '__main__':
