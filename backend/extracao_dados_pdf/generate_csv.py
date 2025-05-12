@@ -18,7 +18,7 @@ def file_csv(dados, nome_arquivo):
         qtd_3 = sum(1 for k in item if k.startswith("data_vencimento_"))
         max_linhas_3 = max(max_linhas_3, qtd_3)
 
-        qtd_4 = sum(1 for k in item if k.startwith("numero_documento_"))
+        qtd_4 = sum(1 for k in item if k.startswith("numero_documento_"))
         max_linhas_4 = max(max_linhas_4, qtd_4 )
 
     # Cabeçalho dinâmico
