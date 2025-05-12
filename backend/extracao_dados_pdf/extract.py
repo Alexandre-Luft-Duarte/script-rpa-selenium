@@ -32,12 +32,14 @@ def get_data():
                     if linha_digitavel:
                         break
                 
+                numero_documento = None
                 our_number = None
                 for line in lines:
                     for cand in re.findall(r'\b(\d{18})\b', line):
                         digitos = re.sub(r'\D', '', cand)
                         if len(digitos) == 18:
                             our_number = cand.strip()
+                            numero_documento = digitos[-8:-1]
                             break
                     if our_number:
                         break
@@ -52,10 +54,11 @@ def get_data():
                             vencimento = match.group(1)
                             break  # Interrompe o loop ao encontrar a data
 
-                # Adiciona a linha digitável de cada página SEM interromper o loop
+
                 row_data[f"linha_digitavel_{idx + 1}"] = linha_digitavel or "N/A"
                 row_data[f"nosso_numero_{idx + 1}"] = our_number or "N/A"
                 row_data[f"data_vencimento_{idx + 1}"] = vencimento or "N/A"
+                row_data[f"numero_documento_{idx + 1}"] = numero_documento or "N/A"
 
                 # Os outros campos só precisam ser preenchidos uma vez
                 if amount_to_pay is None:
@@ -82,3 +85,7 @@ def get_data():
         extracted_data.append(row_data)
 
     return extracted_data
+
+
+a = get_data()
+print(a)
