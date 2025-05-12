@@ -14,8 +14,6 @@ def get_data():
 
         pdf_path = os.path.join(folder, pdf_name)
         row_data = {"arquivo": pdf_name}  # dicionário final da linha
-        amount_to_pay = None
-        sacado_name = None
 
         with pdfplumber.open(pdf_path) as pdf:
             for idx, page in enumerate(pdf.pages):
@@ -61,6 +59,11 @@ def get_data():
                 row_data[f"numero_documento_{idx + 1}"] = numero_documento or "N/A"
 
                 # Os outros campos só precisam ser preenchidos uma vez
+                amount_to_pay = None
+                sacado_name = None
+                lote = None
+                quadra = None
+
                 if amount_to_pay is None:
                     for line in lines:
                         if 'VALOR À PAGAR' in line or 'IMPOSTO PREDIAL' in line:
@@ -77,15 +80,31 @@ def get_data():
                     m = re.search(r'-(?:\s*([A-ZÀ-Ÿ\/\. ]+?)\s*)-', text)
                     if m:
                         sacado_name = m.group(1)
+                    
+                if lote is None:  # Captura apenas o primeiro "Lote" encontrado
+                    for line in lines:
+                        if 'Lote:' in line:
+                            match = re.search(r'Lote:\s*(.+)', line)
+                            if match:
+                                lote = match.group(1).strip()  # Captura qualquer coisa após "Lote:" e remove espaços extras
+                                break  # Interrompe o loop após encontrar o primeiro "Lote"
+
+                if quadra is None:  # Captura apenas o primeiro "Quadra" encontrado
+                    for line in lines:
+                        if 'Quadra:' in line:
+                            match = re.search(r'Quadra:\s*(\d+)', line)
+                            if match:
+                                quadra = match.group(1).strip()  # Captura qualquer coisa após "Quadra:" e remove espaços extras
+                                break  # Interrompe o loop após encontrar o primeiro "Quadra"
+                        
 
         # Depois do loop:
         row_data["valor"] = amount_to_pay or "N/A"
         row_data["nome"] = sacado_name or "N/A"
+        row_data["lote"] = lote or "N/A"
+        row_data["quadra"] = quadra or "N/A"
 
         extracted_data.append(row_data)
 
     return extracted_data
 
-
-a = get_data()
-print(a)
