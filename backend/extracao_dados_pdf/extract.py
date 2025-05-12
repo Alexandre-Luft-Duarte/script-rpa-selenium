@@ -41,10 +41,21 @@ def get_data():
                             break
                     if our_number:
                         break
-                    
+
+                vencimento = None
+                for line in lines:
+                    # Procura por linhas que contenham a palavra "VENCIMENTO"
+                    if 'VENCIMENTO' in line.upper():
+                        # Procura por datas no formato DD/MM/AAAA
+                        match = re.search(r'\b(\d{2}/\d{2}/\d{4})\b', line)
+                        if match:
+                            vencimento = match.group(1)
+                            break  # Interrompe o loop ao encontrar a data
+
                 # Adiciona a linha digitável de cada página SEM interromper o loop
                 row_data[f"linha_digitavel_{idx + 1}"] = linha_digitavel or "N/A"
                 row_data[f"nosso_numero_{idx + 1}"] = our_number or "N/A"
+                row_data[f"data_vencimento_{idx + 1}"] = vencimento or "N/A"
 
                 # Os outros campos só precisam ser preenchidos uma vez
                 if amount_to_pay is None:
