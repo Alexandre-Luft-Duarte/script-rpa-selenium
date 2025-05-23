@@ -1,0 +1,36 @@
+
+# Arquivos com dados reais
+backend/iptus.csv
+backend/emission_pdfs_iptu/pdfs_iptu/
+
+# Arquivos Python compilados
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Logs
+*.log
+
+# Ambientes virtuais
+venv/
+.env/
+.envrc
+.venv/
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# Arquivos temporários
+*.tmp
+*.bak
+*.swp
+
+# Arquivos de output
+*.csv
+!backend/iptus_exemplo.csv
