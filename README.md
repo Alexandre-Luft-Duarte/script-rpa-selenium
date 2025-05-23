@@ -1,5 +1,5 @@
 
-# 🏛️ Bot de Automação de IPTU – Download de PDFs e Extração de Dados
+# Bot de Automação de IPTU – Download de PDFs e Extração de Dados
 
 Este projeto é um bot de automação feito com **Selenium e Python** que acessa o site da prefeitura da sua cidade, **pesquisa imóveis com base em uma lista de códigos**, baixa os arquivos PDF com as guias de IPTU e depois **extrai as informações relevantes** desses documentos, gerando uma planilha CSV consolidada.
 
@@ -46,7 +46,7 @@ pip install selenium pdfplumber
 
 ---
 
-## 🛠️ Como usar
+## Como usar
 
 1. **Prepare a lista de códigos de imóveis** no arquivo CSV que será usado (pode ser o `iptus.csv` ou outro especificado no código).
 2. **Execute o script principal** para iniciar a automação:
