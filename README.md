@@ -1,11 +1,19 @@
 
-# Bot de Automação de IPTU – Download de PDFs e Extração de Dados
+# 🏛️ Bot de Automação de IPTU – Download de PDFs e Extração de Dados
 
 Este projeto é um bot de automação feito com **Selenium e Python** que acessa o site da prefeitura da sua cidade, **pesquisa imóveis com base em uma lista de códigos**, baixa os arquivos PDF com as guias de IPTU e depois **extrai as informações relevantes** desses documentos, gerando uma planilha CSV consolidada.
 
 ---
 
-## O que este projeto faz
+## ⚠️ Aviso
+
+Este repositório **não contém dados reais de terceiros**. Os arquivos presentes (`iptus.csv`, PDFs, etc.) foram gerados com **dados fictícios apenas para fins demonstrativos**.
+
+Se você deseja rodar o projeto com seus próprios dados, substitua o conteúdo desses arquivos localmente — nunca exponha dados pessoais ou sensíveis em repositórios públicos.
+
+---
+
+## ✅ O que este projeto faz
 
 1. **Lê uma lista de códigos de imóveis** a partir de um arquivo CSV.
 2. **Usa o Selenium** para acessar o site da prefeitura e fazer as pesquisas.
@@ -19,13 +27,13 @@ Este projeto é um bot de automação feito com **Selenium e Python** que acessa
 
 ---
 
-##  Estrutura do Projeto
+## 📁 Estrutura do Projeto
 
 ```
 backend/
-├── iptus.csv                             # Planilha final com os dados extraídos
+├── iptus.csv                             # Planilha com dados fictícios
 ├── emission_pdfs_iptu/
-│   └── pdfs_iptu/                        # PDFs baixados
+│   └── pdfs_iptu/                        # PDFs fictícios ou simulados
 ├── extracao_dados_pdf/
 │   ├── extract.py                        # Código para ler os PDFs e extrair dados
 │   └── generate_csv.py                   # Gera o CSV a partir dos dados extraídos
@@ -34,7 +42,7 @@ backend/
 
 ---
 
-## Requisitos
+## 🧰 Requisitos
 
 - Python 3.10+
 - Google Chrome + ChromeDriver (para o Selenium funcionar)
@@ -46,9 +54,9 @@ pip install selenium pdfplumber
 
 ---
 
-## Como usar
+## ▶️ Como usar
 
-1. **Prepare a lista de códigos de imóveis** no arquivo CSV que será usado (pode ser o `iptus.csv` ou outro especificado no código).
+1. **Prepare a lista de códigos de imóveis** no arquivo CSV que será usado (por exemplo, `iptus.csv`).
 2. **Execute o script principal** para iniciar a automação:
 
 ```bash
@@ -66,9 +74,9 @@ python generate_csv.py
 
 ---
 
-## Dados extraídos
+## 📊 Dados extraídos
 
-O sistema identifica automaticamente múltiplas páginas por guia e cria colunas dinâmicas, como:
+O sistema identifica automaticamente múltiplas páginas por guia e cria colunas dinâmicas como:
 
 - `linha_digitavel_1`, `linha_digitavel_2`, ...
 - `nosso_numero_1`, `nosso_numero_2`, ...
@@ -77,7 +85,7 @@ O sistema identifica automaticamente múltiplas páginas por guia e cria colunas
 
 ---
 
-##  Observações
+## 📌 Observações
 
 - Os PDFs devem conter **texto pesquisável** (não podem ser apenas imagens).
 - A extração usa expressões regulares para localizar os dados nas páginas.
